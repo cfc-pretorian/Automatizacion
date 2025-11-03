@@ -1,8 +1,12 @@
 name: Daily IP reputation check (batch)
 
+# 👇 este bloque es CLAVE para permitir el push automático
+permissions:
+  contents: write
+
 on:
   schedule:
-    - cron: '0 2 * * *'  # cada día a las 02:00 UTC
+    - cron: '0 3 * * *'  # todos los días a las 00:00 hora Chile (03:00 UTC)
   workflow_dispatch: {}
 
 concurrency:
@@ -12,11 +16,12 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          persist-credentials: true
+          persist-credentials: true  # necesario para poder hacer push
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -29,8 +34,8 @@ jobs:
       - name: Run IP batch check
         env:
           ABUSEIPDB_KEY: ${{ secrets.ABUSEIPDB_KEY }}
-          BATCH_SIZE: '1000'                    # ajustar si quieres otro tamaño
-          DAILY_SAFE_LIMIT: '950'               # dejar margen
+          BATCH_SIZE: '1000'          # cantidad de IPs por día
+          DAILY_SAFE_LIMIT: '950'     # límite seguro de llamadas a la API
         run: |
           python scripts/check_batch.py
 
